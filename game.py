@@ -17,8 +17,13 @@ Play_color = (255, 0, 0)
 background = 'bg.jpg'
 bg = pygame.image.load(background).convert_alpha()
 eat = pygame.mixer.Sound("eat.wav")
-
-
+def get_apple(snake_rect):
+    apple_x = random.randrange(4, SCREEN_SIZE[0]-4, 1)
+    apple_y = random.randrange(4, SCREEN_SIZE[1]-4, 1)
+    while pygame.Rect((apple_x - 5, apple_y - 5), (10, 10)).collidelist(snake_rect)!=-1:
+        apple_x = random.randrange(4, SCREEN_SIZE[0]-4, 1)
+        apple_y = random.randrange(4, SCREEN_SIZE[1]-4, 1)
+    return (apple_x,apple_y)
 def game_loop():
     data = open("data.bin", 'rb')
     strg = data.read().decode('base64','strict')
@@ -34,8 +39,7 @@ def game_loop():
         coordinate += [(SCREEN_SIZE[0] / 2 - i * 5, SCREEN_SIZE[1] / 2)]
         snake_rect += [pygame.Rect((coordinate[i][0] - 5, coordinate[i][1] - 5), (10, 10))]
     flag = 0
-    apple_x = random.randrange(4, SCREEN_SIZE[0]-4, 1)
-    apple_y = random.randrange(4, SCREEN_SIZE[1]-4, 1)
+    (apple_x,apple_y)=get_apple(snake_rect)
     apple_rect = pygame.Rect((apple_x - 5, apple_y - 5), (10, 10))
     prev_event_type=KEYUP
     while True:
@@ -72,8 +76,7 @@ def game_loop():
             if eat.get_num_channels() != 0:
                 eat.stop()
             eat.play(0, 1000)
-            apple_x = random.randrange(4, SCREEN_SIZE[0]-4, 1)
-            apple_y = random.randrange(4, SCREEN_SIZE[1]-4, 1)
+            (apple_x,apple_y)=get_apple(snake_rect)
             score += 5
             for i in range(0, 6):
                 coordinate += [coordinate[len(coordinate) - 1]]
@@ -119,6 +122,7 @@ def game_loop():
 
 
 def menu_loop():
+    pos=0
     play_rect = pygame.Rect((SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2), (50, 50))
     while True:
         for event in pygame.event.get():
@@ -132,6 +136,12 @@ def menu_loop():
                     globals()["Play_color"] = (255, 0, 0)
             elif event.type == MOUSEBUTTONDOWN:
                 if play_rect.collidepoint(event.pos):
+                    game_loop()
+            elif event.type == KEYDOWN:
+                if event.key ==K_DOWN or event.key==K_UP:
+                    globals()["Play_color"] = (0, 255, 0)
+                    pos=1
+                if event.key==K_RETURN and pos==1:
                     game_loop()
         GameDisplay.fill((0,0,0))
         GameDisplay.blit(bg,(0,0))
