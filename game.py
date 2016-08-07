@@ -4,11 +4,11 @@ from pygame.locals import *
 from sys import exit
 import random
 
-data = open("data.bin", 'a')
+data = open("data.bin", 'a')  # Create file for high score
 data.close()
 pygame.init()
-SCREEN_SIZE = (800, 600)
-Display_Size = (1000, 600)
+SCREEN_SIZE = (800, 600)  # This size is for the snake to move around
+Display_Size = (1000, 600)  # this size is for entire screen
 font = pygame.font.SysFont("arial", 24)
 font_height = font.get_linesize()
 GameDisplay = pygame.display.set_mode(Display_Size, DOUBLEBUF, 32)
@@ -17,16 +17,20 @@ Play_color = (255, 0, 0)
 background = 'bg.jpg'
 bg = pygame.image.load(background).convert_alpha()
 eat = pygame.mixer.Sound("eat.wav")
-def get_apple(snake_rect):
-    apple_x = random.randrange(4, SCREEN_SIZE[0]-4, 1)
-    apple_y = random.randrange(4, SCREEN_SIZE[1]-4, 1)
-    while pygame.Rect((apple_x - 5, apple_y - 5), (10, 10)).collidelist(snake_rect)!=-1:
-        apple_x = random.randrange(4, SCREEN_SIZE[0]-4, 1)
-        apple_y = random.randrange(4, SCREEN_SIZE[1]-4, 1)
-    return (apple_x,apple_y)
+
+
+def get_apple(snake_rect):  # Randomly get next apple co-ordinates
+    apple_x = random.randrange(4, SCREEN_SIZE[0] - 4, 1)
+    apple_y = random.randrange(4, SCREEN_SIZE[1] - 4, 1)
+    while pygame.Rect((apple_x - 5, apple_y - 5), (10, 10)).collidelist(snake_rect) != -1:
+        apple_x = random.randrange(4, SCREEN_SIZE[0] - 4, 1)
+        apple_y = random.randrange(4, SCREEN_SIZE[1] - 4, 1)
+    return (apple_x, apple_y)
+
+
 def game_loop():
     data = open("data.bin", 'rb')
-    strg = data.read().decode('base64','strict')
+    strg = data.read().decode('base64', 'strict')  # get high score
     data.close()
     high_score = 0
     if strg.isdigit():
@@ -39,9 +43,9 @@ def game_loop():
         coordinate += [(SCREEN_SIZE[0] / 2 - i * 5, SCREEN_SIZE[1] / 2)]
         snake_rect += [pygame.Rect((coordinate[i][0] - 5, coordinate[i][1] - 5), (10, 10))]
     flag = 0
-    (apple_x,apple_y)=get_apple(snake_rect)
+    (apple_x, apple_y) = get_apple(snake_rect)
     apple_rect = pygame.Rect((apple_x - 5, apple_y - 5), (10, 10))
-    prev_event_type=KEYUP
+    prev_event_type = KEYUP
     while True:
         pygame.time.delay(10)
         for event in pygame.event.get():
@@ -49,7 +53,7 @@ def game_loop():
             if event.type == QUIT:
                 exit()
 
-            if event.type == KEYDOWN:
+            if event.type == KEYDOWN:  # Game controls
                 flag = 1
                 if event.key == K_LEFT:
                     if x == 0:
@@ -72,45 +76,47 @@ def game_loop():
                     y = 0
                     flag = 0
 
-        if apple_rect.colliderect(snake_rect[0]):
+        if apple_rect.colliderect(snake_rect[0]):  # Check if snake reached apple
             if eat.get_num_channels() != 0:
                 eat.stop()
-            eat.play(0, 1000)
-            (apple_x,apple_y)=get_apple(snake_rect)
+            eat.play(0, 1000)                       # make sound
+            (apple_x, apple_y) = get_apple(snake_rect)
             score += 5
-            for i in range(0, 6):
+            for i in range(0, 6):                   # increase snake size by 6
                 coordinate += [coordinate[len(coordinate) - 1]]
                 snake_rect += [snake_rect[len(snake_rect) - 1]]
         for i in snake_rect[7:]:
-            if i.colliderect(snake_rect[0]):
+            if i.colliderect(snake_rect[0]):  # check if snake hit itself
                 GameDisplay.blit(font.render("Gameover!!", True, (255, 255, 255)),
                                  (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2))
                 pygame.display.update()
                 g = pygame.event.poll()
                 while g.type != KEYDOWN:
-                    if g.type==QUIT:
+                    if g.type == QUIT:
                         exit()
                     g = pygame.event.poll()
                 data = open("data.bin", 'wb')
-                data.write(str(high_score).encode('base64','strict'))
+                data.write(str(high_score).encode('base64', 'strict'))  # Save high score in encoded format .:P
                 data.close()
                 return
         if flag != 0:
             for i in range(len(coordinate) - 1, 0, -1):
                 coordinate[i] = coordinate[i - 1]
                 snake_rect[i] = snake_rect[i - 1]
-
+        # start moving the snake
         coordinate[0] = (coordinate[0][0] + x, coordinate[0][1] + y)
         coordinate[0] = (coordinate[0][0] % SCREEN_SIZE[0], coordinate[0][1] % SCREEN_SIZE[1])
         GameDisplay.fill((47, 159, 39))
-        pygame.draw.line(GameDisplay, (255, 255, 255), (SCREEN_SIZE[0] + 1, 0), (SCREEN_SIZE[0] + 1, Display_Size[1]), 10)
+        pygame.draw.line(GameDisplay, (255, 255, 255), (SCREEN_SIZE[0] + 1, 0), (SCREEN_SIZE[0] + 1, Display_Size[1]),
+                         10)
         GameDisplay.blit(font.render("Score:{0}".format(score), True, (255, 255, 255)), (SCREEN_SIZE[0] + 20, 50))
-        GameDisplay.blit(font.render("Highest:{0}".format(high_score), True, (255, 255, 255)), (SCREEN_SIZE[0] + 20, 150))
+        GameDisplay.blit(font.render("Highest:{0}".format(high_score), True, (255, 255, 255)),
+                         (SCREEN_SIZE[0] + 20, 150))
         apple_rect = pygame.draw.circle(GameDisplay, (24, 16, 179), (apple_x, apple_y), 8, 0)
         snake_rect[0] = pygame.draw.circle(GameDisplay, (255, 0, 0), coordinate[0], 3, 0)
         for i in range(1, len(coordinate) - 1):
             if i == 3:
-                snake_rect[i] = pygame.draw.circle(GameDisplay, (0,0,0),
+                snake_rect[i] = pygame.draw.circle(GameDisplay, (0, 0, 0),
                                                    coordinate[i], 10, 0)
             else:
                 snake_rect[i] = pygame.draw.circle(GameDisplay, (abs(255 - 25 * i) % 255, 0, 0),
@@ -121,8 +127,8 @@ def game_loop():
             high_score = score
 
 
-def menu_loop():
-    pos=0
+def menu_loop():  # Menu just for fun
+    pos = 0
     play_rect = pygame.Rect((SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2), (50, 50))
     while True:
         for event in pygame.event.get():
@@ -138,13 +144,13 @@ def menu_loop():
                 if play_rect.collidepoint(event.pos):
                     game_loop()
             elif event.type == KEYDOWN:
-                if event.key ==K_DOWN or event.key==K_UP:
+                if event.key == K_DOWN or event.key == K_UP:
                     globals()["Play_color"] = (0, 255, 0)
-                    pos=1
-                if event.key==K_RETURN and pos==1:
+                    pos = 1
+                if event.key == K_RETURN and pos == 1:
                     game_loop()
-        GameDisplay.fill((0,0,0))
-        GameDisplay.blit(bg,(0,0))
+        GameDisplay.fill((0, 0, 0))
+        GameDisplay.blit(bg, (0, 0))
         play_rect = pygame.draw.rect(GameDisplay, Play_color,
                                      (Display_Size[0] / 2 - 50, Display_Size[1] / 2 - 25, 100, 50), 0)
         GameDisplay.blit(font.render("PLAY", True, (0, 0, 0)),
