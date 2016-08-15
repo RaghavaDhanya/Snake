@@ -7,6 +7,7 @@ import random
 data = open("data.bin", 'a')  # Create file for high score
 data.close()
 pygame.init()
+pygame.mixer.init()
 SCREEN_SIZE = (800, 600)  # This size is for the snake to move around
 Display_Size = (1000, 600)  # this size is for entire screen
 font = pygame.font.SysFont("arial", 24)
