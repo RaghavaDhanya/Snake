@@ -1,8 +1,9 @@
 __author__ = 'Raghava'
+import random
+from sys import exit
+
 import pygame
 from pygame.locals import *
-from sys import exit
-import random
 
 data = open("data.bin", 'a')  # Create file for high score
 data.close()
@@ -46,7 +47,6 @@ def game_loop():
     flag = 0
     (apple_x, apple_y) = get_apple(snake_rect)
     apple_rect = pygame.Rect((apple_x - 5, apple_y - 5), (10, 10))
-    prev_event_type = KEYUP
     while True:
         pygame.time.delay(10)
         for event in pygame.event.get():
@@ -80,10 +80,10 @@ def game_loop():
         if apple_rect.colliderect(snake_rect[0]):  # Check if snake reached apple
             if eat.get_num_channels() != 0:
                 eat.stop()
-            eat.play(0, 1000)                       # make sound
+            eat.play(0, 1000)  # make sound
             (apple_x, apple_y) = get_apple(snake_rect)
             score += 5
-            for i in range(0, 6):                   # increase snake size by 6
+            for i in range(0, 6):  # increase snake size by 6
                 coordinate += [coordinate[len(coordinate) - 1]]
                 snake_rect += [snake_rect[len(snake_rect) - 1]]
         for i in snake_rect[7:]:
@@ -132,21 +132,21 @@ def menu_loop():  # Menu just for fun
     pos = 0
     play_rect = pygame.Rect((SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2), (50, 50))
     while True:
+        global Play_color
         for event in pygame.event.get():
             if event.type == QUIT:
                 exit()
             elif event.type == MOUSEMOTION:
                 if play_rect.collidepoint(event.pos):
-
-                    globals()["Play_color"] = (0, 255, 0)
+                    Play_color = (0, 255, 0)
                 else:
-                    globals()["Play_color"] = (255, 0, 0)
+                    Play_color = (255, 0, 0)
             elif event.type == MOUSEBUTTONDOWN:
                 if play_rect.collidepoint(event.pos):
                     game_loop()
             elif event.type == KEYDOWN:
                 if event.key == K_DOWN or event.key == K_UP:
-                    globals()["Play_color"] = (0, 255, 0)
+                    Play_color = (0, 255, 0)
                     pos = 1
                 if event.key == K_RETURN and pos == 1:
                     game_loop()
